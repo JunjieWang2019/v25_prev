@@ -999,6 +999,10 @@ write(const SequenceParameterSet& sps, const AttributeParameterSet& aps)
   bs.writeSe(aps.aps_chroma_qp_offset);
   bs.write(aps.aps_slice_qp_deltas_present_flag);
 
+  if (aps.attr_encoding == AttributeEncoding::kLiftingTransform
+    || aps.attr_encoding == AttributeEncoding::kRAHTransform)
+    bs.write(aps.last_component_prediction_enabled_flag);
+
   if (aps.lodParametersPresent()) {
     bs.writeUe(aps.num_pred_nearest_neighbours_minus1);
     bs.writeUe(aps.inter_lod_search_range);
@@ -1008,9 +1012,6 @@ write(const SequenceParameterSet& sps, const AttributeParameterSet& aps)
     bs.writeUe(lod_neigh_bias_minus1.x());
     bs.writeUe(lod_neigh_bias_minus1.y());
     bs.writeUe(lod_neigh_bias_minus1.z());
-
-    if (aps.attr_encoding == AttributeEncoding::kLiftingTransform)
-      bs.write(aps.last_component_prediction_enabled_flag);
 
     bs.write(aps.scalable_lifting_enabled_flag);
     if (aps.scalable_lifting_enabled_flag)
@@ -1156,6 +1157,11 @@ parseAps(const PayloadBuffer& buf, const SequenceParameterSet& sps)
   aps.scalable_lifting_enabled_flag = false;
   aps.aps_slice_dist2_deltas_present_flag = false;
   aps.dist2 = 0;
+
+  if (aps.attr_encoding == AttributeEncoding::kLiftingTransform
+    || aps.attr_encoding == AttributeEncoding::kRAHTransform)
+    bs.read(&aps.last_component_prediction_enabled_flag);
+
   if (aps.lodParametersPresent()) {
     bs.readUe(&aps.num_pred_nearest_neighbours_minus1);
     bs.readUe(&aps.inter_lod_search_range);
@@ -1166,9 +1172,6 @@ parseAps(const PayloadBuffer& buf, const SequenceParameterSet& sps)
     bs.readUe(&lod_neigh_bias_minus1.z());
     // NB: this is in XYZ axis order until the GPS is converted to STV
     aps.lodNeighBias = lod_neigh_bias_minus1 + 1;
-
-    if (aps.attr_encoding == AttributeEncoding::kLiftingTransform)
-      bs.read(&aps.last_component_prediction_enabled_flag);
 
     bs.read(&aps.scalable_lifting_enabled_flag);
     if (aps.scalable_lifting_enabled_flag)
