@@ -1923,7 +1923,10 @@ write(
         int aclayeridx = aps.raht_inter_skip_layers-1;
         for (int filteridx = 0; filteridx<numFilters; filteridx++) {
           int currenttap = abh.RAHTFilterTaps[filteridx];
-          if(abh.raht_attr_layer_code_mode[aclayeridx]){
+          if ((filteridx == 0) && (aps.raht_inter_skip_layers == 0))
+            bs.writeSe(currenttap);
+          else if(abh.raht_attr_layer_code_mode[aclayeridx])
+		  {
             bs.writeSe(currenttap);
           }
           aclayeridx++;
@@ -2098,7 +2101,10 @@ parseAbh(
         int aclayeridx = aps.raht_inter_skip_layers-1;
         abh.RAHTFilterTaps.resize(numFilters);
         for (int i = 0; i < numFilters; i++) {
-          if(abh.raht_attr_layer_code_mode[aclayeridx]){
+          if ((i == 0) && (aps.raht_inter_skip_layers == 0))
+            bs.readSe(&abh.RAHTFilterTaps[i]);
+          else if(abh.raht_attr_layer_code_mode[aclayeridx])
+          {
             bs.readSe(&abh.RAHTFilterTaps[i]);
           }
           aclayeridx++;
